@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+/*
+  Paleta BACCO — selva del Putumayo de noche.
+  Base oscura + verde hoja + 3 acentos cromáticos que armonizan con el verde:
+  río (turquesa, análogo), luciérnaga (ámbar, tríada cálida), heliconia (coral, complementario).
+  Regla de marca: TODO el texto es blanco. Los colores solo viven en luz, bordes, iconos y fondos.
+*/
+@theme {
+  --color-ink: #040a06;
+  --color-canopy: #0a1a10;
+  --color-moss: #11291a;
+  --color-leaf: #3fbf5a;
+  --color-leaf-deep: #17723a;
+  --color-river: #19d3c5;
+  --color-firefly: #f5b841;
+  --color-heliconia: #ff4f6d;
+
+  --font-display: "Unbounded", system-ui, sans-serif;
+  --font-sans: "Manrope", system-ui, sans-serif;
+
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-morph: morph 14s ease-in-out infinite;
+  --animate-float: float var(--dur, 9s) ease-in-out infinite;
+  --animate-eq: eq 0.9s ease-in-out infinite;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes morph {
+    0%, 100% { border-radius: 58% 42% 63% 37% / 45% 55% 45% 55%; transform: rotate(0deg) scale(1); }
+    33% { border-radius: 38% 62% 41% 59% / 60% 38% 62% 40%; transform: rotate(40deg) scale(1.06); }
+    66% { border-radius: 63% 37% 52% 48% / 37% 61% 39% 63%; transform: rotate(-30deg) scale(0.96); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translate3d(0, 0, 0); opacity: 0; }
+    15% { opacity: 1; }
+    50% { transform: translate3d(var(--dx, 20px), var(--dy, -60px), 0); opacity: 0.9; }
+    85% { opacity: 0.6; }
+  }
+  @keyframes eq {
+    0%, 100% { transform: scaleY(0.25); }
+    50% { transform: scaleY(1); }
+  }
+}
+
+@layer base {
+  html {
+    overflow-x: clip;
+    scroll-behavior: smooth;
+    background: var(--color-ink);
+    color: #fff;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    font-family: var(--font-sans);
+    /* Sin fondo propio: si lo tuviera, taparía las capas -z (humo fijo de fondo). El color lo da html. */
+    color: #fff;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: var(--color-leaf-deep);
+    color: #fff;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-river);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  img {
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+}
+
+.text-glow {
+  text-shadow: 0 0 28px rgb(63 191 90 / 0.55), 0 0 2px rgb(255 255 255 / 0.4);
+}
+
+.glass {
+  background: rgb(4 10 6 / 0.55);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / 0.1);
+}
+
+.mask-fade-x {
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--color-canopy);
+    backdrop-filter: none;
+  }
+}
