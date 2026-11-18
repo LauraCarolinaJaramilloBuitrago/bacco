@@ -284,7 +284,7 @@ export function SiriWave({
   React.useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const gl = canvas.getContext("webgl")
+    const gl = canvas.getContext("webgl", { antialias: false, powerPreference: "low-power" })
     if (!gl) return
 
     const compile = (type: number, src: string) => {
@@ -328,20 +328,44 @@ export function SiriWave({
 
     const start =
       typeof performance !== "undefined" ? performance.now() : Date.now()
+    gl.uniform2f(uResolution, dim, dim)
     let raf = 0
-    const frame = () => {
-      const now =
-        typeof performance !== "undefined" ? performance.now() : Date.now()
-      const t = (now - start) / 1000
-      gl.uniform2f(uResolution, dim, dim)
-      gl.uniform1f(uTime, t)
+    let lastDraw = 0
+    let onScreen = true
+    const MIN_GAP = 1000 / 30 // 30 fps bastan para una onda suave
+    const frame = (ts?: number) => {
+      raf = requestAnimationFrame(frame)
+      const now = ts ?? performance.now()
+      if (now - lastDraw < MIN_GAP - 2) return
+      lastDraw = now
+      gl.uniform1f(uTime, (performance.now() - start) / 1000)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
+    }
+    const run = () => {
+      if (raf || !onScreen || document.hidden) return
       raf = requestAnimationFrame(frame)
     }
-    frame()
+    const halt = () => {
+      cancelAnimationFrame(raf)
+      raf = 0
+    }
+    // Fuera de pantalla o pestaña oculta: no se dibuja nada
+    const io = new IntersectionObserver(([en]) => {
+      onScreen = en.isIntersecting
+      if (onScreen) run()
+      else halt()
+    })
+    io.observe(canvas)
+    const onVis = () => (document.hidden ? halt() : run())
+    document.addEventListener("visibilitychange", onVis)
+    gl.uniform1f(uTime, 0)
+    gl.drawArrays(gl.TRIANGLES, 0, 3)
+    run()
 
     return () => {
-      cancelAnimationFrame(raf)
+      io.disconnect()
+      document.removeEventListener("visibilitychange", onVis)
+      halt()
       gl.deleteProgram(program)
       gl.deleteShader(vs)
       gl.deleteShader(fs)

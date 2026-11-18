@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { m, useMotionValue, useScroll, useSpring, useTransform } from "motion/react";
 import { VolumeIcon } from "@/components/ui/animated-state-icons";
 import { ArrowIcon, PinIcon } from "@/components/ui/jungle-icons";
@@ -32,6 +32,16 @@ export function Hero() {
   // Orbe de luz: puntos fluidos en reposo, onda de voz cuando suena un set.
   // Sigue el puntero (parallax) y "late" con cada toque.
   const { isPlaying } = usePlayer();
+  // La onda se monta con retraso: el iframe y el contexto WebGL no compiten en el mismo instante
+  const [showWave, setShowWave] = useState(false);
+  useEffect(() => {
+    if (!isPlaying) {
+      setShowWave(false);
+      return;
+    }
+    const id = window.setTimeout(() => setShowWave(true), 900);
+    return () => window.clearTimeout(id);
+  }, [isPlaying]);
   const kick = useMotionValue(1);
   const orbScale = useSpring(kick, { stiffness: 220, damping: 12 });
   const orbX = useTransform(sx, (v) => v * 70);
@@ -99,11 +109,11 @@ export function Hero() {
           className="relative mix-blend-screen"
         >
           {/* El humo vive en el fondo global (SmokeBackdrop); aquí solo la onda cuando suena */}
-          {isPlaying && (
+          {showWave && (
             <SiriWave
               variant="wave"
               size={800}
-              renderScale={0.75}
+              renderScale={0.4}
               className="absolute inset-0 size-full rounded-none"
               style={{ width: "100%", height: "100%" }}
             />

@@ -21,20 +21,26 @@ export function LiquidTitle({ text, className }: { text: string; className?: str
     let lastX = 0;
     let lastY = 0;
     let raf = 0;
+    // El filtro solo se recalcula mientras el agua se agita; en reposo el bucle se detiene
+    const loop = () => {
+      current += (target - current) * 0.08;
+      target += (10 - target) * 0.04;
+      disp.setAttribute("scale", current.toFixed(2));
+      if (Math.abs(current - 10) < 0.05 && Math.abs(target - 10) < 0.05) {
+        disp.setAttribute("scale", "10");
+        raf = 0;
+        return;
+      }
+      raf = requestAnimationFrame(loop);
+    };
     const onMove = (e: PointerEvent) => {
       const v = Math.hypot(e.clientX - lastX, e.clientY - lastY);
       lastX = e.clientX;
       lastY = e.clientY;
       target = Math.min(55, 10 + v * 0.9);
-    };
-    const loop = () => {
-      current += (target - current) * 0.08;
-      target += (10 - target) * 0.04;
-      disp.setAttribute("scale", current.toFixed(2));
-      raf = requestAnimationFrame(loop);
+      if (v > 4 && !raf) raf = requestAnimationFrame(loop);
     };
     window.addEventListener("pointermove", onMove, { passive: true });
-    raf = requestAnimationFrame(loop);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", onMove);
@@ -45,14 +51,8 @@ export function LiquidTitle({ text, className }: { text: string; className?: str
     <>
       <svg aria-hidden width="0" height="0" className="absolute">
         <filter id={`liquid-${id}`} x="-10%" y="-20%" width="120%" height="140%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.022" numOctaves="2" seed="4" result="noise">
-            <animate
-              attributeName="baseFrequency"
-              dur="16s"
-              values="0.008 0.022;0.014 0.034;0.008 0.022"
-              repeatCount="indefinite"
-            />
-          </feTurbulence>
+          {/* Ruido estático: animar baseFrequency re-rasteriza el título gigante en cada cuadro */}
+          <feTurbulence type="fractalNoise" baseFrequency="0.01 0.026" numOctaves="1" seed="4" result="noise" />
           <feDisplacementMap ref={dispRef} in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="G" />
         </filter>
       </svg>

@@ -19,8 +19,10 @@ export function SmokeBackdrop() {
         pulse={0}
         scroll={false}
         scale={2.6}
-        resolutionScale={0.5}
-        maxDpr={1.5}
+        // El flujo es suave: menos píxeles y menos fps casi no se notan (resolutionScale fijo: cambiarlo reinicia el WebGL)
+        resolutionScale={0.35}
+        maxFps={isPlaying ? 30 : 45}
+        maxDpr={1.25}
       />
       {/* Velo oscuro uniforme: todo el fondo tiene la misma opacidad en cada sección */}
       <div className="absolute inset-0 bg-ink/70" />

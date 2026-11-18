@@ -143,10 +143,31 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [send]);
 
+  // Marca el <html> mientras suena: el CSS apaga los blur caros sobre el fondo animado
+  const isPlaying = loaded && !paused;
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isPlaying) root.dataset.playing = "";
+    else delete root.dataset.playing;
+    return () => {
+      delete root.dataset.playing;
+    };
+  }, [isPlaying]);
+
   // Escuchar al reproductor: si se pausa/termina desde el propio iframe, sincronizar
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       if (!frame.current || e.source !== frame.current.contentWindow) return;
+      // YouTube manda un infoDelivery con el tiempo cada ~250 ms: solo se parsea lo que cambia estado
+      if (
+        typeof e.data === "string" &&
+        !e.data.includes("playerState") &&
+        !e.data.includes("onStateChange") &&
+        !e.data.includes('"muted"') &&
+        !e.data.includes("method") &&
+        !e.data.includes("finish")
+      )
+        return;
       const d = parse(e.data);
       if (!d) return;
       // YouTube
@@ -176,7 +197,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       loaded,
       paused,
       muted,
-      isPlaying: loaded && !paused,
+      isPlaying,
       play,
       toggle,
       next,
@@ -186,7 +207,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       onFrameLoad,
       embedUrl,
     }),
-    [index, track, loaded, paused, muted, play, toggle, next, prev, toggleMute, frameRef, onFrameLoad, embedUrl],
+    [index, track, loaded, paused, muted, isPlaying, play, toggle, next, prev, toggleMute, frameRef, onFrameLoad, embedUrl],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

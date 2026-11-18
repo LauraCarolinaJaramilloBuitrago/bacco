@@ -19,19 +19,28 @@ export function Cursor() {
     let hx = x;
     let hy = y;
     let raf = 0;
-    const onMove = (e: PointerEvent) => {
-      x = e.clientX;
-      y = e.clientY;
-      const hot = (e.target as Element | null)?.closest?.("a,button,[data-hot]");
-      h.dataset.hot = hot ? "1" : "0";
-      d.dataset.hot = hot ? "1" : "0";
-    };
+    // El bucle solo corre mientras el halo alcanza al puntero; quieto = 0 trabajo
     const loop = () => {
       hx += (x - hx) * (reduce ? 1 : 0.12);
       hy += (y - hy) * (reduce ? 1 : 0.12);
       h.style.transform = `translate3d(${hx}px, ${hy}px, 0) translate(-50%, -50%)`;
       d.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
+      if (Math.abs(x - hx) < 0.3 && Math.abs(y - hy) < 0.3) {
+        raf = 0;
+        return;
+      }
       raf = requestAnimationFrame(loop);
+    };
+    const onMove = (e: PointerEvent) => {
+      x = e.clientX;
+      y = e.clientY;
+      const hot = (e.target as Element | null)?.closest?.("a,button,[data-hot]");
+      const v = hot ? "1" : "0";
+      if (h.dataset.hot !== v) {
+        h.dataset.hot = v;
+        d.dataset.hot = v;
+      }
+      if (!raf) raf = requestAnimationFrame(loop);
     };
     window.addEventListener("pointermove", onMove, { passive: true });
     raf = requestAnimationFrame(loop);

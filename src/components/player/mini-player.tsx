@@ -75,14 +75,13 @@ export function MiniPlayer({ className }: { className?: string }) {
         trigger={
           <span className="relative block size-11">
             {/* Vinilo con la portada: gira mientras suena */}
-            <m.span
-              className="absolute inset-0 overflow-hidden rounded-full ring-2 ring-white/20"
-              animate={p.isPlaying ? { rotate: 360 } : { rotate: 0 }}
-              transition={p.isPlaying ? { duration: 6, repeat: Infinity, ease: "linear" } : { duration: 0.4 }}
+            <span
+              className="animate-vinyl absolute inset-0 overflow-hidden rounded-full ring-2 ring-white/20"
+              style={{ animationPlayState: p.isPlaying ? "running" : "paused" }}
             >
               <img key={p.track.id} src={p.track.cover} alt="" className="size-full object-cover" />
               <span className="absolute inset-0 rounded-full bg-[repeating-radial-gradient(circle,transparent_0_3px,rgb(0_0_0/0.18)_3px_4px)]" />
-            </m.span>
+            </span>
             <span aria-hidden className="absolute left-1/2 top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-1 ring-white/50" />
             {/* Indicador de estado */}
             <span
@@ -103,13 +102,7 @@ export function MiniPlayer({ className }: { className?: string }) {
             </span>
             {/* Pulso cuando suena */}
             {p.isPlaying && (
-              <m.span
-                aria-hidden
-                className="absolute inset-0 rounded-full"
-                style={{ boxShadow: `0 0 0 2px ${c}` }}
-                animate={{ scale: [1, 1.45], opacity: [0.7, 0] }}
-                transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
-              />
+              <span aria-hidden className="animate-pulse-ring absolute inset-0 rounded-full" style={{ boxShadow: `0 0 0 2px ${c}` }} />
             )}
           </span>
         }

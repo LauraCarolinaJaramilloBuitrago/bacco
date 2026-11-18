@@ -63,7 +63,7 @@ export function Smoke({ className, rate = 0.3, followPointer = true, tint = "210
 
     const puffs: Puff[] = [];
     const spawn = (x: number, y: number, trail = false) => {
-      if (puffs.length > 200) return;
+      if (puffs.length > 110) return;
       puffs.push({
         x,
         y,

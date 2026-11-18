@@ -272,6 +272,8 @@ export interface SilkShaderProps {
   maxDpr?: number;
   /** Escala de resolución interna (el flujo es suave: 0.5–0.75 rinde bien) */
   resolutionScale?: number;
+  /** Tope de cuadros por segundo (menos GPU/CPU; el movimiento sigue en tiempo real) */
+  maxFps?: number;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -286,13 +288,14 @@ export function SilkShader({
   scale = 1.26,
   maxDpr = 2,
   resolutionScale = 1,
+  maxFps = 60,
   className,
   style,
 }: SilkShaderProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const live = useRef({ colors, energy, cursor, bpm, pulse, scroll, scale });
+  const live = useRef({ colors, energy, cursor, bpm, pulse, scroll, scale, maxFps });
   useLayoutEffect(() => {
-    live.current = { colors, energy, cursor, bpm, pulse, scroll, scale };
+    live.current = { colors, energy, cursor, bpm, pulse, scroll, scale, maxFps };
   });
 
   useEffect(() => {
@@ -386,6 +389,10 @@ export function SilkShader({
     // Scroll: posición con retraso suave + velocidad normalizada 0–1
     const sc = { y: window.scrollY, off: window.scrollY, v: 0 };
 
+    let palKey = "";
+    let pal: RGB[] = [];
+    const flat = new Float32Array(24);
+
     const draw = (dt: number) => {
       const L = live.current;
       if (L.scroll && dt > 0) {
@@ -409,10 +416,15 @@ export function SilkShader({
       // El golpe también empuja el flujo hacia adelante
       t += dt * 0.76 * calm * (1 + e * 1.4 + kick * 1.6);
 
-      const pal = L.colors.slice(0, 8).map(hex);
-      const flat = new Float32Array(24);
-      pal.forEach((c, i) => flat.set(c, i * 3));
-      gl.uniform3fv(U.colors, flat);
+      // Paleta: solo se recalcula y se sube a la GPU cuando cambia
+      const palNow = L.colors.join();
+      if (palNow !== palKey) {
+        palKey = palNow;
+        pal = L.colors.slice(0, 8).map(hex);
+        flat.fill(0);
+        pal.forEach((c, i) => flat.set(c, i * 3));
+        gl.uniform3fv(U.colors, flat);
+      }
 
       const now = performance.now();
       const moving = L.cursor && now - ptr.lastMove < 900 ? 1 : 0;
@@ -434,10 +446,12 @@ export function SilkShader({
     let raf = 0;
     let onScreen = true;
     const loop = (now: number) => {
+      raf = requestAnimationFrame(loop);
+      // Tope de fps: se salta el cuadro si aún no toca (el tiempo acumulado se conserva)
+      if (now - last < 1000 / live.current.maxFps - 2) return;
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
       draw(dt);
-      raf = requestAnimationFrame(loop);
     };
     const start = () => {
       if (raf || !onScreen || document.hidden) return;
