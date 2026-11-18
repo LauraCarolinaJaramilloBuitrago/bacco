@@ -164,7 +164,7 @@ export function Hero() {
             transition={{ delay: 0.5, duration: 0.9 }}
             className="mt-5 max-w-xl text-base font-medium leading-relaxed text-white sm:mt-6 sm:text-xl"
           >
-            Frecuencias de selva para la pista. Techno, indie dance, progressive, hard groove y tech house desde el
+            Frecuencias de selva para la pista. Techno, indie dance, progressive, hard groove y raw techno desde el
             piedemonte amazónico.
           </m.p>
 

@@ -31,7 +31,7 @@ export type GenreInfo = {
   tags: string[];
 };
 
-// Orden del slider: Techno primero, Tech House al final.
+// Orden del slider: Techno primero, Raw Techno al final.
 export const GENRE_INFO: GenreInfo[] = [
   {
     name: "Techno",
@@ -62,7 +62,7 @@ export const GENRE_INFO: GenreInfo[] = [
     bpm: "130–145",
     accent: "heliconia",
     sound:
-      "Groove acelerado y contundente: percusión rodante, bajos pegajosos y energía de pico. Mezcla la fuerza del techno con el swing del tech house.",
+      "Groove acelerado y contundente: percusión rodante, bajos pegajosos y energía de pico. Mezcla la fuerza del techno con el swing del groove.",
     tags: ["Intenso", "Rodante", "Energía"],
   },
   {
@@ -74,12 +74,12 @@ export const GENRE_INFO: GenreInfo[] = [
     tags: ["Swing", "Bajo", "Rebote"],
   },
   {
-    name: "Tech House",
-    bpm: "124–128",
+    name: "Raw Techno",
+    bpm: "135–150",
     accent: "leaf",
     sound:
-      "Directo y bailable: bombo seco, bajos rodantes, percusión minimalista y recortes vocales. Funcional para la pista, pegajoso y fácil de sentir desde el primer compás.",
-    tags: ["Bajo rodante", "Vocal chops", "Bailable"],
+      "Techno crudo y sin adornos: bombos saturados, percusión industrial, texturas ásperas y mucha tensión. Rápido, directo y físico, hecho para la pista a máxima potencia.",
+    tags: ["Crudo", "Industrial", "Bombo saturado"],
   },
 ];
 
